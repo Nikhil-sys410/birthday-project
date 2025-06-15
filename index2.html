@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Happy Birthday, My Dearest Friend!</title>
+    <!-- Tailwind CSS CDN for rapid styling and responsive utilities -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Playfair Display for elegant headings, Inter for clean body text -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome for beautiful icons (e.g., gift, heart, eye) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <!-- Tone.js CDN for delightful sound effects and musical playback -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <style>
+      /* Base styles and custom animations beyond Tailwind for enhanced aesthetics */
+      body {
+        font-family: "Inter", sans-serif; /* Default font throughout the body */
+        /* Removed overflow: hidden; to enable scrolling */
+        /* Animated background gradient for a soft, inviting and dynamic feel */
+        background: linear-gradient(135deg, #f0b5ed, #d2a7f5, #b898f0, #9d8de0);
+        background-size: 300% 300%; /* Ensures the gradient is larger than the viewport for smooth animation */
+        animation: gradient-shift 18s ease infinite; /* Slow, continuous background animation for a soothing effect */
+      }
+
+      /* Keyframes for the gentle background gradient shift */
+      @keyframes gradient-shift {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      /* Card entry animation: fade in, slide up, and slight 3D rotation for a grand reveal */
+      @keyframes cardEntry {
+        from {
+          opacity: 0;
+          transform: translateY(50px) scale(0.95) rotateX(10deg);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1) rotateX(0deg);
+        }
+      }
+      .animate-card-entry {
+        animation: cardEntry 1s ease-out forwards; /* Applies the animation once the page loads */
+        animation-delay: 0.5s; /* A short delay for a smoother, less abrupt start */
+        opacity: 0; /* Ensures the card starts invisible before the animation begins */
+        transform-style: preserve-3d; /* Necessary for proper 3D transforms on child elements */
+        perspective: 1000px; /* Defines the perspective depth for 3D elements */
+      }
+
+      /* Subtle 3D hover effect for the main birthday card, adding interactivity */
+      .birthday-card:hover {
+        transform: translateY(-5px) scale(1.01) rotateX(2deg) rotateY(2deg); /* Lifts, slightly scales, and tilts the card */
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* Enhances the shadow on hover for a floating effect */
+      }
+      .birthday-card {
+        transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; /* Smooth transition for all hover properties */
+      }
+
+      /* Typing effect for the main birthday message, revealing text character by character */
+      .typing-effect {
+        white-space: pre-wrap; /* Preserves whitespace and line breaks from the JavaScript source */
+        overflow: hidden; /* Hides any text content until it's "typed" */
+        border-right: 0.15em solid orange; /* Creates the visual blinking cursor */
+        animation: typing 3.5s steps(40, end),
+          blink-caret 0.75s step-end infinite; /* Controls typing speed and cursor blink */
+      }
+
+      /* Hides the typing cursor once the entire message has been typed */
+      .typing-effect.active {
+        border-right: none;
+      }
+
+      /* Keyframes for the typing animation (revealing text width) */
+      @keyframes typing {
+        from {
+          width: 0;
+        } /* Starts with zero width, effectively hidden */
+        to {
+          width: 100%;
+        } /* Expands to full width, revealing text */
+      }
+      /* Keyframes for the blinking cursor effect */
+      @keyframes blink-caret {
+        from,
+        to {
+          border-color: transparent;
+        } /* Makes the cursor transparent (invisible) */
+        50% {
+          border-color: orange;
+        } /* Makes the cursor visible */
+      }
+
+      /* Styling for individual confetti pieces */
+      .confetti-piece {
+        position: absolute;
+        background-color: var(
+          --color
+        ); /* Color dynamically set via JavaScript custom property */
+        opacity: 0; /* Starts completely invisible */
+        /* Animation for falling and spinning, with custom properties for variation */
+        animation: fallAndSpin var(--duration) forwards
+          cubic-bezier(0.2, 0.8, 0.2, 1);
+        transform-origin: center; /* Ensures rotation occurs around the center of the piece */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for visual depth */
+        transition: background-color 0.1s; /* Smooth color transition if colors were to change */
+        z-index: 20; /* Ensures confetti appears above other elements */
+      }
+
+      /* Keyframes for the confetti falling and spinning animation */
+      @keyframes fallAndSpin {
+        0% {
+          transform: translate(var(--startX), var(--startY)) rotate(0deg)
+            scale(1);
+          opacity: 1; /* Confetti appears at the start of its animation */
+        }
+        100% {
+          transform: translate(var(--endX), var(--endY)) rotate(var(--rotation))
+            scale(0.7);
+          opacity: 0; /* Confetti falls off-screen and fades out */
+        }
+      }
+
+      /* Styling for the floating balloons */
+      .balloon {
+        position: absolute;
+        background-color: var(
+          --balloon-color
+        ); /* Color dynamically set via JavaScript */
+        border-radius: 50%; /* Gives the balloon its oval shape */
+        width: var(--size-w); /* Width dynamically set via JavaScript */
+        height: var(--size-h); /* Height dynamically set via JavaScript */
+        bottom: -70px; /* Starts slightly below the viewport for a rising effect */
+        opacity: 0; /* Starts invisible */
+        animation: floatUp var(--float-duration) infinite ease-in-out; /* Continuous floating animation */
+        box-shadow: inset -5px -5px 10px rgba(0, 0, 0, 0.2); /* Inner shadow for a volumetric look */
+        z-index: 0; /* Ensures balloons are behind the main birthday card */
+      }
+      /* Pseudo-element for the small knot at the bottom of the balloon */
+      .balloon::before {
+        content: "";
+        position: absolute;
+        width: calc(
+          var(--size-w) * 0.16
+        ); /* Proportional width to balloon size */
+        height: calc(
+          var(--size-h) * 0.13
+        ); /* Proportional height to balloon size */
+        background-color: inherit; /* Inherits the balloon's color */
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg); /* Centers and rotates to form a diamond shape */
+        border-radius: 0 0 50% 0; /* Rounded bottom right corner for shape */
+        box-shadow: inset -2px -2px 5px rgba(0, 0, 0, 0.2); /* Inner shadow for depth */
+      }
+      /* Styling for the balloon string */
+      .balloon-string {
+        position: absolute;
+        width: 2px; /* Thin line for the string */
+        height: var(--string-h); /* Height dynamically set via JavaScript */
+        background-color: rgba(
+          0,
+          0,
+          0,
+          0.3
+        ); /* Semi-transparent black for subtlety */
+        bottom: var(
+          --string-bottom
+        ); /* Position dynamically set via JavaScript */
+        left: 50%;
+        transform: translateX(-50%); /* Centers the string */
+      }
+      /* Keyframes for the balloon floating up animation */
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0);
+          opacity: 0;
+        } /* Starts at bottom, invisible */
+        5% {
+          opacity: 1;
+        } /* Quickly fades in to full opacity */
+        95% {
+          opacity: 1;
+        } /* Stays fully opaque for most of the animation */
+        100% {
+          transform: translateY(-100vh);
+          opacity: 0;
+        } /* Floats off-screen and fades out */
+      }
+
+      /* Common hover animation (ripple effect) for all buttons with 'animated-button' class */
+      .animated-button::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(
+          255,
+          255,
+          255,
+          0.2
+        ); /* White translucent ripple color */
+        border-radius: 50%; /* Makes the ripple circular */
+        transition: all 0.4s ease-out; /* Smooth expansion of the ripple */
+        transform: translate(
+          -50%,
+          -50%
+        ); /* Centers the ripple within the button */
+        z-index: 0; /* Ensures the ripple effect stays behind the button text */
+      }
+      /* Expand the ripple on button hover */
+      .animated-button:hover::before {
+        width: 200%; /* Expands to twice the button's width */
+        height: 200%; /* Expands to twice the button's height */
+      }
+
+      /* Animation for the message box appearing */
+      .animate-fadeInUp {
+        animation: fadeInUp 0.5s ease-out forwards;
+      }
+      /* Keyframes for the message box fading in and sliding up */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        } /* Starts invisible and slightly below */
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        } /* Fades in and slides to final position */
+      }
+
+      /* Styles for the secret message reveal section */
+      .secret-message-container {
+        position: relative;
+        cursor: pointer;
+        overflow: hidden; /* Ensures blur effect is contained */
+        transition: filter 1s ease-out, transform 0.5s ease-out; /* Smooth transition for blur and scale */
+        filter: blur(10px); /* Initial blur effect */
+        transform: scale(0.95); /* Slightly smaller when blurred */
+      }
+
+      .secret-message-container.revealed {
+        filter: blur(0px); /* Remove blur when revealed */
+        transform: scale(1); /* Return to original size when revealed */
+      }
+      .secret-message-content {
+        font-family: "Playfair Display", serif;
+        font-weight: 700;
+        text-align: center;
+        color: #4a0077; /* Deep purple */
+        line-height: 1.6;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex items-center justify-center p-4 relative">
+    <!-- Container for floating balloons (dynamically generated by JS for background animation) -->
+    <div
+      id="balloon-container"
+      class="absolute inset-0 pointer-events-none"
+    ></div>
+
+    <!-- Main birthday card container - central element of the page -->
+    <div
+      id="birthdayCard"
+      class="birthday-card bg-white bg-opacity-95 rounded-3xl shadow-2xl p-8 md:p-12 max-w-4xl w-full text-center relative overflow-hidden border border-purple-100"
+    >
+      <!-- Container for confetti particles (dynamically generated by JS on surprise click) -->
+      <div
+        id="confetti-container"
+        class="absolute inset-0 pointer-events-none z-20"
+      ></div>
+
+      <!-- Main heading for the birthday message with gradient text -->
+      <h1
+        class="font-['Playfair_Display'] text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-700 to-pink-600 mb-6 drop-shadow-lg leading-tight"
+      >
+        Happy Birthday, <span id="friendName">My Dearest Friend</span>!
+      </h1>
+
+      <!-- Optional image section for your friend's photo with hover effects -->
+      <div class="mb-8 relative group">
+        <img
+          id="friendImage"
+          src="https://placehold.co/400x300/a78bfa/ffffff?text=Your+Friend's+Photo"
+          alt="Your Best Friend"
+          class="rounded-2xl mx-auto w-full md:max-w-md h-auto shadow-xl border-4 border-pink-300 transform transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105"
+        />
+        <div
+          class="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-2xl"
+        ></div>
+      </div>
+
+      <!-- Personalized birthday message with an engaging typing effect -->
+      <p
+        class="text-lg md:text-xl text-gray-700 mb-8 leading-relaxed font-inter"
+      >
+        <i class="fas fa-heart text-pink-500 mr-2"></i>
+        <span
+          id="birthdayMessage"
+          data-text="Wishing you the happiest of birthdays, filled with joy, laughter, and all the wonderful things you deserve. You bring so much light into my life, and I'm incredibly grateful for our friendship. May your special day be as amazing as you are!"
+        >
+          <!-- Message will be typed here by JavaScript for a dynamic reveal -->
+          <span
+            id="messageTypingIndicator"
+            class="text-sm text-gray-500 ml-2"
+          ></span>
+          <!-- Typing indicator -->
+        </span>
+        <i class="fas fa-heart text-pink-500 ml-2"></i>
+      </p>
+
+      <!-- Secret Message Reveal Section -->
+      <div
+        class="bg-white bg-opacity-70 rounded-xl p-6 shadow-lg mb-8 mx-auto max-w-xl"
+      >
+        <h2
+          class="font-['Playfair_Display'] text-2xl font-bold text-gray-800 mb-4"
+        >
+          A Special Secret Just For You!
+        </h2>
+        <div
+          id="secretMessageContainer"
+          class="secret-message-container bg-purple-50 p-6 rounded-lg border-2 border-purple-300 relative"
+        >
+          <!-- Content to be revealed. Can be text or an image. -->
+          <p
+            id="secretMessageContent"
+            class="secret-message-content text-2xl md:text-3xl text-purple-700 select-none"
+          >
+            "Every moment spent with you is a treasure. Thank you for being the
+            most amazing friend a person could ask for. Here's to many more
+            years of laughter, adventures, and unforgettable memories!"
+          </p>
+          <!-- Optional: Image to reveal instead of text -->
+          <!-- <img id="secretImageContent" src="https://placehold.co/400x200/9d8de0/ffffff?text=Your+Secret+Image" alt="Secret Image" class="w-full h-auto rounded-lg mx-auto block select-none"> -->
+          <button
+            id="revealSecretButton"
+            aria-label="Reveal Secret Message"
+            class="absolute inset-0 w-full h-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center rounded-lg text-white font-bold text-xl opacity-90 hover:opacity-100 transition-opacity duration-300"
+          >
+            <span class="text-3xl md:text-4xl"
+              >Click to Reveal! <i class="fas fa-eye ml-3"></i
+            ></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Buttons for interactive surprises, laid out responsively -->
+      <div
+        class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4"
+      >
+        <!-- Button to reveal the main surprise (music and confetti) -->
+        <button
+          id="surpriseButton"
+          aria-label="Open Birthday Surprise"
+          class="animated-button bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-pink-300 relative overflow-hidden group"
+        >
+          <span class="relative z-10 text-lg"
+            >Open Your Surprise!
+            <i class="fas fa-gift ml-2 group-hover:animate-bounce"></i
+          ></span>
+        </button>
+      </div>
+
+      <!-- Custom Message Box/Modal for displaying surprises and generated content -->
+      <div
+        id="messageBox"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="messageBoxTitle"
+        class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50"
+      >
+        <div
+          class="bg-white rounded-2xl p-8 max-w-lg w-full text-center shadow-xl relative animate-fadeInUp"
+        >
+          <h3
+            id="messageBoxTitle"
+            class="font-['Playfair_Display'] text-3xl font-bold text-pink-600 mb-4"
+          ></h3>
+          <p
+            id="messageBoxContent"
+            class="text-gray-700 text-lg mb-6 font-inter"
+          ></p>
+          <button
+            id="closeMessageBox"
+            aria-label="Close Message Box"
+            class="bg-pink-500 text-white font-bold py-2 px-6 rounded-full hover:bg-pink-600 transition-colors duration-300"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /**
+       * @typedef {object} Config - Configuration object for the birthday page.
+       * @property {string} friendName - The name of the friend celebrating the birthday.
+       * @property {string} birthdayMessage - The main birthday message text.
+       * @property {string} friendImageUrl - URL for the friend's photo.
+       * @property {string} secretMessage - The secret message to be revealed.
+       * @property {number} typingSpeed - Speed of the typewriter effect in milliseconds per character.
+       * @property {object} confetti - Configuration for confetti animation.
+       * @property {number} confetti.count - Number of confetti pieces.
+       * @property {string[]} confetti.colors - Array of hex color codes for confetti.
+       * @property {string[]} confetti.shapes - Array of shape types for confetti ('circle', 'square', 'triangle', 'star').
+       * @property {number} confetti.minSize - Minimum size of confetti pieces in pixels.
+       * @property {number} confetti.maxSize - Maximum size of confetti pieces in pixels.
+       * @property {number} confetti.durationMin - Minimum animation duration for confetti fall in seconds.
+       * @property {number} confetti.durationMax - Maximum animation duration for confetti fall in seconds.
+       * @property {object} balloons - Configuration for balloon animation.
+       * @property {number} balloons.count - Number of balloons.
+       * @property {string[]} balloons.colors - Array of hex color codes for balloons.
+       * @property {number} balloons.minSize - Minimum width of balloons in pixels.
+       * @property {number} balloons.maxSize - Maximum width of balloons in pixels.
+       * @property {number} balloons.floatDurationMin - Minimum floating duration in seconds.
+       * @property {number} balloons.floatDurationMax - Maximum floating duration in seconds.
+       * @property {object[]} birthdayTune - Array of musical notes for the birthday melody (Tone.js format).
+       * @property {string} birthdayTune.note - The musical note (e.g., "C4").
+       * @property {string} birthdayTune.duration - The duration of the note (e.g., "8n", "4n").
+       * @property {number} birthdayTune.time - The time offset for the note in the sequence.
+       */
+      const config = {
+        friendName: "Alice", // Personalize: Replace with your best friend's name!
+        birthdayMessage: `My dearest Alice, on your special day, I want to wish you all the happiness and joy in the world.
+You are an incredible friend, and I cherish every moment we share. May your year be filled with
+amazing adventures, success, and endless laughter. You deserve nothing but the best! Happy Birthday!`,
+        friendImageUrl:
+          "https://placehold.co/400x300/a78bfa/ffffff?text=Your+Friend's+Photo", // Personalize: Replace with your friend's photo URL
+        secretMessage:
+          "Every moment spent with you is a treasure. Thank you for being the most amazing friend a person could ask for. Here's to many more years of laughter, adventures, and unforgettable memories!", // Personalize: The secret message!
+        typingSpeed: 50, // Controls how fast the message types out (milliseconds per character)
+        confetti: {
+          count: 200, // Total number of confetti pieces to burst
+          colors: [
+            "#FF69B4",
+            "#8A2BE2",
+            "#00BFFF",
+            "#FFD700",
+            "#32CD32",
+            "#FF4500",
+            "#f1c40f",
+            "#9b59b6",
+            "#3498db",
+            "#e74c3c",
+          ],
+          shapes: ["circle", "square", "triangle", "star"], // Available confetti shapes
+          minSize: 6, // Smallest confetti size in pixels
+          maxSize: 12, // Largest confetti size in pixels
+          durationMin: 3, // Minimum time for a confetti piece to fall (seconds)
+          durationMax: 5, // Maximum time for a confetti piece to fall (seconds)
+        },
+        balloons: {
+          count: 10, // Number of balloons to appear in each burst (periodically)
+          colors: ["#FFC0CB", "#ADD8E6", "#90EE90", "#FFDAB9", "#DA70D6"], // Soft pastel colors for balloons
+          minSize: 50, // Minimum width of a balloon in pixels
+          maxSize: 70, // Maximum width of a balloon in pixels
+          floatDurationMin: 12, // Minimum duration for a balloon to float across the screen (seconds)
+          floatDurationMax: 20, // Maximum duration for a balloon to float across the screen (seconds)
+        },
+        birthdayTune: [
+          // Musical notes in Tone.js format for "Happy Birthday" melody
+          { note: "C4", duration: "8n", time: 0 },
+          { note: "C4", duration: "8n", time: 0.25 },
+          { note: "D4", duration: "4n", time: 0.5 },
+          { note: "C4", duration: "4n", time: 1 },
+          { note: "F4", duration: "4n", time: 1.5 },
+          { note: "E4", duration: "2n", time: 2 },
+          { note: "C4", duration: "8n", time: 3 },
+          { note: "C4", duration: "8n", time: 3.25 },
+          { note: "D4", duration: "4n", time: 3.5 },
+          { note: "C4", duration: "4n", time: 4 },
+          { note: "G4", duration: "4n", time: 4.5 },
+          { note: "F4", duration: "2n", time: 5 },
+          { note: "C4", duration: "8n", time: 6 },
+          { note: "C4", duration: "8n", time: 6.25 },
+          { note: "C5", duration: "4n", time: 6.5 },
+          { note: "A4", duration: "4n", time: 7 },
+          { note: "F4", duration: "8n", time: 7.5 },
+          { note: "E4", duration: "8n", time: 7.75 },
+          { note: "D4", duration: "2n", time: 8 },
+          { note: "Bb4", duration: "8n", time: 9 },
+          { note: "Bb4", duration: "8n", time: 9.25 },
+          { note: "A4", duration: "4n", time: 9.5 },
+          { note: "F4", duration: "4n", time: 10 },
+          { note: "G4", duration: "4n", time: 10.5 },
+          { note: "F4", duration: "2n", time: 11 },
+        ],
+      };
+
+      // --- DOM Elements Caching ---
+      // Caching references to frequently accessed DOM elements for better performance.
+      const DOMElements = {
+        friendName: document.getElementById("friendName"),
+        birthdayMessageSpan: document.getElementById("birthdayMessage"),
+        friendImage: document.getElementById("friendImage"),
+        surpriseButton: document.getElementById("surpriseButton"),
+        secretMessageContainer: document.getElementById(
+          "secretMessageContainer"
+        ), // New: Container for secret message
+        secretMessageContent: document.getElementById("secretMessageContent"), // New: Element for secret text
+        // secretImageContent: document.getElementById('secretImageContent'),       // Optional: For secret image
+        revealSecretButton: document.getElementById("revealSecretButton"), // New: Button to reveal secret
+        confettiContainer: document.getElementById("confetti-container"),
+        messageBox: document.getElementById("messageBox"),
+        messageBoxTitle: document.getElementById("messageBoxTitle"),
+        messageBoxContent: document.getElementById("messageBoxContent"),
+        closeMessageBoxButton: document.getElementById("closeMessageBox"),
+        birthdayCard: document.getElementById("birthdayCard"),
+        balloonContainer: document.getElementById("balloon-container"),
+        messageTypingIndicator: document.getElementById(
+          "messageTypingIndicator"
+        ),
+      };
+
+      let audioSynth; // Global variable to hold the Tone.js synthesizer instance.
+
+      /**
+       * Displays a custom modal message box to the user.
+       * @param {string} title - The title to be displayed at the top of the message box.
+       * @param {string} content - The main textual content of the message box.
+       */
+      function showMessageBox(title, content) {
+        DOMElements.messageBoxTitle.textContent = title;
+        DOMElements.messageBoxContent.textContent = content;
+        DOMElements.messageBox.classList.remove("hidden"); // Makes the modal visible by removing 'hidden' class.
+      }
+
+      /**
+       * Plays a predefined birthday melody using Tone.js.
+       * This function includes logic to start/resume the AudioContext, which is crucial
+       * for audio playback in modern browsers due to security restrictions requiring user interaction.
+       */
+      async function playBirthdayTune() {
+        // Check if the AudioContext is in a suspended state (common for initial page load)
+        // and attempt to resume or start it upon user interaction.
+        if (Tone.context.state !== "running") {
+          try {
+            await Tone.start(); // This will resume a suspended context or start a new one.
+            console.log("Audio context started/resumed for tune playback.");
+          } catch (error) {
+            console.error(
+              "Failed to start/resume audio context for tune playback:",
+              error
+            );
+            // Provide visual feedback to the user if audio cannot play due to browser policy.
+            showMessageBox(
+              "Audio Playback Error",
+              "Unable to play music. Your browser might require interaction to play audio. Please ensure your device's sound is on and try again!"
+            );
+            return; // Exit the function if audio context cannot be started.
+          }
+        }
+
+        // Initialize the synthesizer only if it hasn't been created yet.
+        if (!audioSynth) {
+          audioSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sine" }, // Uses a sine wave for a clean, pleasant sound.
+            envelope: {
+              // Defines the attack, decay, sustain, and release of each note.
+              attack: 0.02,
+              decay: 0.3,
+              sustain: 0.5,
+              release: 1.5,
+            },
+            volume: -12, // Adjusts the overall volume of the synthesizer.
+          }).toDestination(); // Connects the synthesizer output directly to the speakers.
+          console.log("Audio synthesizer initialized.");
+        }
+
+        // If the synthesizer is ready, schedule and play the notes from the configuration.
+        if (audioSynth) {
+          config.birthdayTune.forEach((n) => {
+            // TriggerAttackRelease plays a note for a specific duration at a specific time.
+            audioSynth.triggerAttackRelease(
+              n.note,
+              n.duration,
+              Tone.now() + n.time
+            );
+            console.log(
+              `Playing note: ${n.note} at time: ${Tone.now() + n.time}`
+            ); // Log each note played
+          });
+        } else {
+          console.warn(
+            "Audio synthesizer not ready after initialization attempt. Music cannot play."
+          );
+        }
+      }
+
+      /**
+       * Creates a single confetti piece with dynamic properties (shape, size, color, animation).
+       * @param {string} type - The desired shape of the confetti ('circle', 'square', 'triangle', 'star').
+       * @returns {HTMLElement} The dynamically created HTML div element representing a confetti piece.
+       */
+      function createSingleConfetti(type) {
+        const confetti = document.createElement("div");
+        confetti.classList.add("confetti-piece");
+
+        // Randomly select properties for variety in confetti pieces.
+        const chosenColor =
+          config.confetti.colors[
+            Math.floor(Math.random() * config.confetti.colors.length)
+          ];
+        const size =
+          Math.random() * (config.confetti.maxSize - config.confetti.minSize) +
+          config.confetti.minSize;
+        const duration =
+          Math.random() *
+            (config.confetti.durationMax - config.confetti.durationMin) +
+          config.confetti.durationMin;
+
+        // Define random start and end positions, and rotation for a natural falling effect.
+        const startX = `${Math.random() * 100}vw`; // Start horizontally anywhere on screen.
+        const startY = `${Math.random() * -50}px`; // Start above the viewport.
+        const endX = `${(Math.random() - 0.5) * 500}px`; // Allow horizontal drift.
+        const endY = `100vh`; // Fall to the bottom of the viewport.
+        const rotation = `${Math.random() * 1080 - 540}deg`; // Random rotation up to 3 full spins.
+
+        // Apply CSS custom properties to the confetti element, used by CSS animations.
+        confetti.style.setProperty("--color", chosenColor);
+        confetti.style.setProperty("--duration", `${duration}s`);
+        confetti.style.setProperty("--startX", startX);
+        confetti.style.setProperty("--startY", startY);
+        confetti.style.setProperty("--endX", endX);
+        confetti.style.setProperty("--endY", endY);
+        confetti.style.setProperty("--rotation", rotation);
+
+        // Apply shape-specific CSS styles.
+        if (type === "triangle") {
+          confetti.style.width = "0";
+          confetti.style.height = "0";
+          confetti.style.backgroundColor = "transparent"; // Essential for border-based shapes.
+          confetti.style.borderLeft = `${size / 2}px solid transparent`;
+          confetti.style.borderRight = `${size / 2}px solid transparent`;
+          confetti.style.borderBottom = `${
+            size * (Math.sqrt(3) / 2)
+          }px solid ${chosenColor}`;
+          confetti.style.borderRadius = "0";
+        } else if (type === "square") {
+          confetti.style.width = `${size}px`;
+          confetti.style.height = `${size}px`;
+          confetti.style.borderRadius = "0";
+        } else if (type === "star") {
+          // Inline SVG is used for complex shapes like stars for better scalability and control.
+          const starSVG = `
+                    <svg viewBox="0 0 100 100" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                        <polygon points="50,0 61.8,38.2 100,38.2 68.2,61.8 79.4,100 50,76.4 20.6,100 31.8,61.8 0,38.2 38.2,38.2" fill="${chosenColor}"/>
+                    </svg>
+                `;
+          confetti.style.width = `${size}px`;
+          confetti.style.height = `${size}px`;
+          confetti.style.backgroundColor = "transparent"; // SVG will handle the fill color.
+          confetti.innerHTML = starSVG; // Inject the SVG directly into the div.
+        } else {
+          // Default to 'circle' if type is not recognized or is 'circle'.
+          confetti.style.width = `${size}px`;
+          confetti.style.height = `${size}px`;
+          confetti.style.borderRadius = "50%"; // Creates a circular shape.
+        }
+
+        return confetti;
+      }
+
+      /**
+       * Triggers a burst of confetti animation by creating and appending multiple confetti pieces
+       * to the designated container.
+       */
+      function triggerConfettiBurst() {
+        for (let i = 0; i < config.confetti.count; i++) {
+          // Randomly select a confetti shape from the configured options.
+          const randomShape =
+            config.confetti.shapes[
+              Math.floor(Math.random() * config.confetti.shapes.length)
+            ];
+          const confetti = createSingleConfetti(randomShape);
+          DOMElements.confettiContainer.appendChild(confetti); // Add the confetti to the DOM.
+
+          // Remove the confetti element after its animation completes to clean up the DOM and improve performance.
+          confetti.addEventListener("animationend", () => confetti.remove());
+        }
+      }
+
+      /**
+       * Implements a typewriter-like effect for displaying text character by character.
+       * @param {HTMLElement} element - The target HTML element where the text will be typed.
+       * @param {string} text - The full string content to be displayed with the typing effect.
+       * @param {number} delay - The delay in milliseconds between each character being typed.
+       */
+      function typeWriterEffect(element, text, delay) {
+        let charIndex = 0;
+        // Ensure the element's text content is clear and cursor is initially visible.
+        element.classList.remove("active");
+        element.textContent = "";
+        DOMElements.messageTypingIndicator.textContent = "_"; // Show typing indicator
+
+        function type() {
+          if (charIndex < text.length) {
+            element.textContent += text.charAt(charIndex);
+            charIndex++;
+            setTimeout(type, delay); // Schedule the next character to be typed.
+          } else {
+            element.classList.add("active"); // Hide the cursor once typing is complete.
+            DOMElements.messageTypingIndicator.textContent = ""; // Hide typing indicator
+          }
+        }
+        type(); // Initiate the typing process.
+      }
+
+      /**
+       * Generates and appends floating balloon elements to the page at random positions.
+       * Balloons are designed to appear periodically and float upwards, creating a festive background.
+       */
+      function generateBalloons() {
+        for (let i = 0; i < config.balloons.count; i++) {
+          const balloon = document.createElement("div");
+          balloon.classList.add("balloon");
+
+          // Randomly select properties for each balloon, ensuring variety.
+          const chosenColor =
+            config.balloons.colors[
+              Math.floor(Math.random() * config.balloons.colors.length)
+            ];
+          const size =
+            Math.random() *
+              (config.balloons.maxSize - config.balloons.minSize) +
+            config.balloons.minSize;
+          const floatDuration =
+            Math.random() *
+              (config.balloons.floatDurationMax -
+                config.balloons.floatDurationMin) +
+            config.balloons.floatDurationMin;
+          const delay = Math.random() * (config.balloons.floatDurationMax / 2); // Stagger their initial appearance.
+
+          // Apply custom CSS properties to the balloon element for animation.
+          balloon.style.setProperty("--balloon-color", chosenColor);
+          balloon.style.setProperty("--size-w", `${size}px`);
+          balloon.style.setProperty("--size-h", `${size * 1.2}px`); // Makes balloons slightly taller than wide.
+          balloon.style.setProperty("--float-duration", `${floatDuration}s`);
+          balloon.style.setProperty("left", `${Math.random() * 90 + 5}vw`); // Random horizontal starting position.
+          balloon.style.animationDelay = `${delay}s`;
+
+          // Calculate and apply the string height proportional to the balloon size.
+          const stringHeight = size * 0.5;
+          balloon.style.setProperty("--string-h", `${stringHeight}px`);
+          balloon.style.setProperty("--string-bottom", `-${stringHeight}px`);
+
+          // Create and append the balloon string element.
+          const string = document.createElement("div");
+          string.classList.add("balloon-string");
+          balloon.appendChild(string);
+
+          DOMElements.balloonContainer.appendChild(balloon); // Add the balloon to its container.
+
+          // Remove the balloon element from the DOM after its animation completes to prevent memory leaks.
+          balloon.addEventListener("animationend", () => balloon.remove());
+        }
+      }
+
+      /**
+       * Reveals the hidden secret message or image.
+       * This function removes the overlay/blur effect to show the content.
+       */
+      function revealSecretMessage() {
+        DOMElements.secretMessageContainer.classList.add("revealed"); // Apply CSS class to reveal
+        DOMElements.revealSecretButton.style.display = "none"; // Hide the "Click to Reveal" button
+        // You can optionally add a sound effect here for the reveal
+      }
+
+      /**
+       * Sets up all event listeners for interactive elements on the page.
+       * This function ensures that button clicks trigger the corresponding actions.
+       */
+      function setupEventListeners() {
+        // Event listener for the "Open Your Surprise!" button.
+        DOMElements.surpriseButton.addEventListener("click", () => {
+          DOMElements.surpriseButton.disabled = true; // Disable the button to prevent rapid multiple clicks.
+          DOMElements.surpriseButton.innerHTML =
+            '<span class="relative z-10 text-lg">Surprise Opened! <i class="fas fa-check ml-2"></i></span>';
+
+          triggerConfettiBurst(); // Initiate the confetti animation.
+          playBirthdayTune(); // Start playing the birthday melody.
+
+          // Show a celebratory message box after a brief delay.
+          setTimeout(() => {
+            showMessageBox(
+              "A Little Tune for You! 🎉",
+              "Hope you liked the surprise! Wishing you a year full of happiness and success."
+            );
+          }, 1000); // Delay in milliseconds before showing the message box.
+        });
+
+        // Event listener for the "Click to Reveal!" button.
+        DOMElements.revealSecretButton.addEventListener(
+          "click",
+          revealSecretMessage
+        );
+
+        // Event listener for the "Close" button within the custom message box modal.
+        DOMElements.closeMessageBoxButton.addEventListener("click", () => {
+          DOMElements.messageBox.classList.add("hidden"); // Hide the message box.
+          // Reset the state of the interactive buttons to allow re-use.
+          DOMElements.surpriseButton.disabled = false;
+          DOMElements.surpriseButton.innerHTML =
+            '<span class="relative z-10 text-lg">Open Your Surprise! <i class="fas fa-gift ml-2 group-hover:animate-bounce"></i></span>';
+        });
+      }
+
+      /**
+       * Updates the static content on the page, such as the friend's name, image source,
+       * and the secret message, based on the values defined in the `config` object.
+       */
+      function updateStaticContent() {
+        DOMElements.friendName.textContent = config.friendName;
+        DOMElements.friendImage.src = config.friendImageUrl;
+        DOMElements.secretMessageContent.textContent = config.secretMessage;
+        // If using an image, uncomment and set the src:
+        // DOMElements.secretImageContent.src = config.secretImageUrl;
+      }
+
+      /**
+       * The main initialization function for the birthday card application.
+       * This function is responsible for setting up the page's initial state,
+       * attaching event listeners, and starting animations.
+       */
+      function initApp() {
+        updateStaticContent(); // Populate dynamic text and image fields.
+        setupEventListeners(); // Prepare all interactive elements.
+
+        // Apply the entry animation to the main birthday card element.
+        DOMElements.birthdayCard.classList.add("animate-card-entry");
+
+        // Start the typing effect for the main birthday message after the card entry animation completes.
+        setTimeout(() => {
+          const fullMessage =
+            DOMElements.birthdayMessageSpan.getAttribute("data-text");
+          typeWriterEffect(
+            DOMElements.birthdayMessageSpan,
+            fullMessage,
+            config.typingSpeed
+          );
+        }, 1500); // Delay for 1.5 seconds to synchronize with card animation.
+
+        // Periodically generate background balloons for a continuous animated effect.
+        setInterval(generateBalloons, 3000); // Schedule new balloons every 3 seconds.
+        generateBalloons(); // Generate an initial batch of balloons immediately on load.
+      }
+
+      // Add an event listener to execute `initApp` once the entire DOM content is loaded.
+      document.addEventListener("DOMContentLoaded", initApp);
+    </script>
+  </body>
+</html>
